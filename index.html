@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Mastermind mit Zahlen (Deutsch)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+    }
+    input[type="text"] {
+      font-size: 1.2em;
+      width: 100px;
+      text-align: center;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 5px 10px;
+      margin-left: 5px;
+    }
+    #log {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 5px;
+      height: 400px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Mastermind mit Zahlen</h1>
+
+<p><strong>1.</strong> Setze deinen eigenen 4-stelligen Geheimcode (Zahlen 0–9):</p>
+<input type="text" id="secretInput" maxlength="4" pattern="\d{4}" autocomplete="off" />
+<button onclick="setSecret()">Code festlegen</button>
+
+<p><strong>2.</strong> Rate den Code (4 Ziffern):</p>
+<input type="text" id="guessInput" maxlength="4" pattern="\d{4}" disabled autocomplete="off" />
+<button onclick="makeGuess()" id="guessButton" disabled>Raten</button>
+
+<div id="log"></div>
+
+<script>
+  let secretCode = "";
+  const logDiv = document.getElementById("log");
+
+  document.getElementById("secretInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      setSecret();
+    }
+  });
+
+  document.getElementById("guessInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      makeGuess();
+    }
+  });
+
+  function setSecret() {
+    const inputElement = document.getElementById("secretInput");
+    const input = inputElement.value.trim();
+
+    if (!/^\d{4}$/.test(input)) {
+      alert("Bitte gib genau 4 Ziffern (0–9) ein.");
+      return;
+    }
+
+    secretCode = input;
+    inputElement.value = "";
+    inputElement.disabled = true;
+
+    document.querySelector('button[onclick="setSecret()"]').disabled = true;
+    document.getElementById("guessInput").disabled = false;
+    document.getElementById("guessButton").disabled = false;
+    document.getElementById("guessInput").focus();
+
+    logDiv.textContent = "Geheimer Code wurde gesetzt! Rate nun den Code.\n";
+    scrollLogToBottom();
+  }
+
+  function makeGuess() {
+    const guessInput = document.getElementById("guessInput");
+    const guess = guessInput.value.trim();
+
+    if (!/^\d{4}$/.test(guess)) {
+      alert("Bitte gib genau 4 Ziffern (0–9) ein.");
+      return;
+    }
+
+    let richtigeStelle = 0;
+    let falscheStelle = 0;
+
+    let secretUsed = [false, false, false, false];
+    let guessUsed = [false, false, false, false];
+
+    for (let i = 0; i < 4; i++) {
+      if (guess[i] === secretCode[i]) {
+        richtigeStelle++;
+        secretUsed[i] = true;
+        guessUsed[i] = true;
+      }
+    }
+
+    for (let i = 0; i < 4; i++) {
+      if (!guessUsed[i]) {
+        for (let j = 0; j < 4; j++) {
+          if (!secretUsed[j] && guess[i] === secretCode[j]) {
+            falscheStelle++;
+            secretUsed[j] = true;
+            break;
+          }
+        }
+      }
+    }
+
+    logDiv.textContent += `Versuch: ${guess}\n`;
+    logDiv.textContent += `✅ ${richtigeStelle} Ziffer(n) sind korrekt und an der richtigen Stelle.\n`;
+    logDiv.textContent += `🔁 ${falscheStelle} Ziffer(n) sind korrekt, aber an der falschen Stelle.\n\n`;
+
+    guessInput.value = "";
+    guessInput.focus();
+    scrollLogToBottom();
+
+    if (richtigeStelle === 4) {
+      logDiv.textContent += "🎉 Glückwunsch! Du hast den Code geknackt! 🎉\n";
+      guessInput.disabled = true;
+      document.getElementById("guessButton").disabled = true;
+      scrollLogToBottom();
+    }
+  }
+
+  function scrollLogToBottom() {
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+</script>
+
+</body>
+</html>
